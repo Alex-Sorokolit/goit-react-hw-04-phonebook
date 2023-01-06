@@ -66,8 +66,8 @@ export class App extends Component {
   };
 
   // Додає дані користувача у масив
-  addContacts = ({ name, number }) => {
-    // console.log(name, number);
+  addContacts = (name, number) => {
+    console.log(name, number);
     // Перевірка чи існує контакт із таким ім'ям у масиві
     const { contacts } = this.state;
     if (
