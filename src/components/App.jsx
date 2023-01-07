@@ -1,56 +1,33 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import ContactForm from './ContactForm';
 import Filter from './Filter';
 import ContactList from './ContactList';
 import { nanoid } from 'nanoid';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
-  // Методи React.Component...........................................
-  // При монтуванні компонента(відбувається один раз)
-  componentDidMount() {
-    console.log('componentDidMount');
-    // Дістаємо дані із localStorage
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(contacts);
-    // console.log(parsedContacts);
-
-    // Записуємо із localStorage в state, з перевіркою на наявність даних в localeStorage
-    if (parsedContacts !== null) {
-      this.setState({ contacts: parsedContacts });
+export function App() {
+  // Дістаємо дані із localStorage з перевіркою чи вони там є, якщо немає то записуємо пустий масив
+  const [contacts, setContacts] = useState(() => {
+    const savedContacts = localStorage.getItem('contacts');
+    if (savedContacts !== null) {
+      const parsedContacts = JSON.parse(savedContacts);
+      return parsedContacts;
     }
-  }
+    return [];
+  });
 
-  // При обновленні компонента (зміна props або state)
-  componentDidUpdate(prevProps, prevState) {
-    console.log('componentDidUpdate');
-    // console.log(prevState);
-    // console.log(this.state);
-    // Перевірка чи обновився state, ❗❗❗без цієї перевірки неможна робити setState (відбудеться зациклення компонента)
-    if (this.state.contacts !== prevState.contacts) {
-      console.log('Обновилось поле contacts');
+  const [filter, setFilter] = useState('');
 
-      // Запис в localstorage
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-  // ...........................................
+  //  Обновлює localeStorage кожен раз коли змінюється contacts
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  // При розмонтуванні компонента
-  componentWillUnmount() {
-    console.log('componentWillUnmount');
-  }
-
-  changeFilter = event => {
-    this.setState({ filter: event.currentTarget.value });
+  const changeFilter = event => {
+    setFilter(event.currentTarget.value);
   };
 
   // Фільтр контактів наявних у масиві
-  getVisibleContacts = () => {
-    const { contacts, filter } = this.state;
+  const getVisibleContacts = () => {
     // state.filter нормалізуємо один раз, а не при кожній ітерації методу filter
     const normalizedFilter = filter.toLocaleLowerCase();
 
@@ -59,17 +36,15 @@ export class App extends Component {
     );
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => ({
+  const deleteContact = contactId => {
+    setContacts(prevState => ({
       contacts: prevState.contacts.filter(contact => contact.id !== contactId),
     }));
   };
 
   // Додає дані користувача у масив
-  addContacts = (name, number) => {
-    console.log(name, number);
+  const addContacts = (name, number) => {
     // Перевірка чи існує контакт із таким ім'ям у масиві
-    const { contacts } = this.state;
     if (
       contacts.find(
         contact => contact.name.toLowerCase() === name.toLowerCase()
@@ -85,31 +60,25 @@ export class App extends Component {
       number,
     };
 
-    this.setState(prevState => ({
-      contacts: [newContact, ...prevState.contacts],
-    }));
+    setContacts(prevContacts => [...prevContacts, newContact]);
   };
 
-  render() {
-    const { filter, contacts } = this.state;
-    const filteredContacts = this.getVisibleContacts();
-    return (
-      <div>
-        <h1>Phonebook</h1>
-        <ContactForm addContacts={this.addContacts} />
+  return (
+    <div>
+      <h1>Phonebook</h1>
+      <ContactForm addContacts={addContacts} />
 
-        <h2>Contacts</h2>
+      <h2>Contacts</h2>
 
-        {contacts.length > 0 && (
-          <>
-            <Filter value={filter} changeFilter={this.changeFilter}></Filter>
-            <ContactList
-              filteredContacts={filteredContacts}
-              deleteContact={this.deleteContact}
-            />
-          </>
-        )}
-      </div>
-    );
-  }
+      {contacts.length > 0 && (
+        <>
+          <Filter value={filter} changeFilter={changeFilter}></Filter>
+          {/* <ContactList
+            filteredContacts={getVisibleContacts}
+            deleteContact={deleteContact}
+          /> */}
+        </>
+      )}
+    </div>
+  );
 }
