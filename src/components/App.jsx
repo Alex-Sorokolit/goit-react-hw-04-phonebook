@@ -37,9 +37,9 @@ export function App() {
   };
 
   const deleteContact = contactId => {
-    setContacts(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+    setContacts(prevState =>
+      prevState.filter(contact => contact.id !== contactId)
+    );
   };
 
   // Додає дані користувача у масив
@@ -73,10 +73,10 @@ export function App() {
       {contacts.length > 0 && (
         <>
           <Filter value={filter} changeFilter={changeFilter}></Filter>
-          {/* <ContactList
-            filteredContacts={getVisibleContacts}
+          <ContactList
+            filteredContacts={getVisibleContacts()}
             deleteContact={deleteContact}
-          /> */}
+          />
         </>
       )}
     </div>
